@@ -1,6 +1,6 @@
 <!-- src/components/TodoList.vue -->
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useTodoStore } from '../stores/todo';
 import type { Todo } from '../stores/todo';
 
@@ -15,6 +15,7 @@ const todoList = todoStore.todoList;
 //   }
 
   const name = ref('');
+  const searchQuery = ref('');
   // const isLogin = ref(false);
   const isEditing = ref(false);
   const editingIndex = ref<number | null>(null);
@@ -108,6 +109,16 @@ function toggleDone(todo: Todo) {
 // function toggleDone(todo: Todo) {
 //   todoStore.updateTodo(todo);
 // }
+
+// ตัวกรองการค้นหา
+const filteredTodoList = computed(() => {
+  if (!searchQuery.value) {
+    return todoList;
+  }
+  return todoList.filter(todo => 
+    todo.text.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 </script>
 
 
@@ -115,58 +126,83 @@ function toggleDone(todo: Todo) {
   <!-- ! คล้ายๆเป็นการสลับค่า  -->
   <!-- <h1 v-if="!isLogin">Logout!</h1>
   <h1 v-else>isLogin 😢</h1> -->
+  
   <v-app>
     <v-main>
       <v-container>
-        <v-text-field
-          v-model="name"
-          class="pa-4"
-          append-inner-icon="mdi-plus"
-          label="Add/Edit Task"
-          hide-details
-          clearable
-        ></v-text-field>
-        <v-btn 
-          @click="addOrUpdateTodo"
-          :color="isEditing ? 'orange' : 'primary'"
-          variant="flat"
-          >
-          {{ isEditing ? 'Update' : 'Add' }}
-        </v-btn>
-        <v-list>
-          <!-- ใช้ v-for เพื่อเป็นการวนลูปข้อมูล ใน todoList -->
-          <v-list-item v-for="(todo, index) in todoList" :key="todo.id">
-            <template v-slot:prepend>
-              <v-list-item-action>
-                <v-checkbox v-model="todo.done" @change="toggleDone(todo)" />
-              </v-list-item-action>
-            </template>
+        <div class="d-flex align-center mb-4">
+          <v-text-field
+            v-model="searchQuery"
+            class="pa-4 mx-auto flex-grow-1"
+            label="search"
+            prepend-inner-icon="mdi-magnify"
+            style="max-width: 350px;"
+            variant="solo"
+            hide-details
+            rounded
+            clearable
+          ></v-text-field>
 
-            <v-list-item-content>
-              <v-list-item-title>
-                <span :class="{ 'text-decoration-line-through': todo.done }">{{ todo.text }} - {{ todo.date }}</span>
-              </v-list-item-title>
-            </v-list-item-content>
+          <v-text-field
+            v-model="name"
+            class="pa-4 mr-4 flex-grow-1"
+            label="Add/Edit Task"
+            variant="solo"
+            hide-details
+            rounded
+            clearable
+          ></v-text-field>
 
-            <template v-slot:append>
-              <v-list-item-action>
-                <v-btn 
-                  @click="() => editTodo(todo, index)"
-                  color="orange-lighten-2"
-                  icon="mdi-pencil" 
-                  variant="text"
-                  >
-                </v-btn>
-                <v-btn 
-                  @click="onDeleteTodo(index)"
-                  icon="mdi-delete"
-                  color="red-lighten-1"
-                  variant="text">
-                </v-btn>
-              </v-list-item-action>
-            </template>
-          </v-list-item>
-        </v-list>
+          <v-btn 
+            @click="addOrUpdateTodo"
+            :color="isEditing ? 'orange-darken-1' : 'green-lighten-1'"
+            variant="flat"
+            class="mr-4"
+            rounded
+            >
+            {{ isEditing ? 'Update' : 'Add' }}
+          </v-btn>
+        </div>
+
+          <v-list>
+            <v-card color="blue-grey-lighten-5">
+              <!-- ใช้ v-for เพื่อเป็นการวนลูปข้อมูล ใน filteredTodoList -->
+              <v-list-item v-for="(todo, index) in filteredTodoList" :key="todo.id">
+                <template v-slot:prepend>
+                  <v-list-item-action>
+                    <v-radio 
+                      v-model="todo.done" 
+                      @change="toggleDone(todo)" 
+                    />
+                  </v-list-item-action>
+                </template>
+
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <span :class="{ 'text-decoration-line-through': todo.done }">{{ todo.text }} - {{ todo.date }}</span>
+                  </v-list-item-title>
+                </v-list-item-content>
+
+                <template v-slot:append>
+                  <v-list-item-action>
+                    <v-btn 
+                      @click="() => editTodo(todo, index)"
+                      color="orange-lighten-2"
+                      icon="mdi-pencil" 
+                      variant="text"
+                      >
+                    </v-btn>
+                    <v-btn 
+                      @click="onDeleteTodo(index)"
+                      icon="mdi-delete"
+                      color="red-lighten-1"
+                      variant="text">
+                    </v-btn>
+                  </v-list-item-action>
+                </template>
+              </v-list-item>
+            </v-card>
+          </v-list>
       </v-container>
     </v-main>
   </v-app>
@@ -185,5 +221,11 @@ function toggleDone(todo: Todo) {
   }
   .flex-grow-1 {
     flex-grow: 1;
+  }
+  .mr-4 {
+    margin-right: 16px;
+  }
+  .mb-4 {
+    margin-bottom: 16px;
   }
 </style>
