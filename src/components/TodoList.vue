@@ -7,12 +7,12 @@ import type { Todo } from '../stores/todo';
 const todoStore = useTodoStore();
 const todoList = todoStore.todoList;
 
-interface Todo {
-    id: number;
-    text: string;
-    date: string;
-    done: boolean;
-  }
+// interface Todo {
+//     id: number;
+//     text: string;
+//     date: string;
+//     done: boolean;
+//   }
 
   const name = ref('');
   // const isLogin = ref(false);
@@ -36,10 +36,8 @@ interface Todo {
 
 function addOrUpdateTodo() {
   if (isEditing.value && editingIndex.value !== null) {
-    // Update existing todo
     updateTodo();
   } else {
-    // Add new todo
     addNewTodo();
   }
 }
@@ -52,17 +50,22 @@ function addNewTodo() {
     done: false
   };
   todoStore.addTodo(newTodo);
-
-  // Reset the form Clear the input after adding
   resetForm();
 }
 
 function updateTodo() {
   if (isEditing.value && editingIndex.value !== null) {
-    todoStore.updateTodoAt(editingIndex.value, { ...todoData });
+    const updatedTodo: Todo = {
+      id: todoData.id,
+      text: name.value,
+      date: todoData.date,
+      done: todoData.done,
+    };
+    todoStore.updateTodo(editingIndex.value, updatedTodo);
     resetForm();
   }
 }
+
 
 function resetForm() {
     todoData.id = 0;
@@ -72,8 +75,7 @@ function resetForm() {
     name.value = '';
     isEditing.value = false;
     editingIndex.value = null;
-  }
-
+}
 
 function editTodo(todo: Todo, index: number) {
   todoData.id = todo.id;
@@ -95,9 +97,17 @@ function onDeleteTodo(index: number) {
 }
 
 
+
 function toggleDone(todo: Todo) {
-  todoStore.updateTodo(todo);
+  const todoIndex = todoList.findIndex(t => t.id === todo.id);
+  if (todoIndex !== -1) {
+    todoStore.updateTodo(todoIndex, { ...todo, done: !todo.done });
+  }
 }
+
+// function toggleDone(todo: Todo) {
+//   todoStore.updateTodo(todo);
+// }
 </script>
 
 
@@ -164,7 +174,16 @@ function toggleDone(todo: Todo) {
 
 
 <style scoped>
-.text-decoration-line-through {
+  .text-decoration-line-through {
   text-decoration: line-through;
-}
+  }
+  .d-flex {
+    display: flex;
+  }
+  .align-center {
+    align-items: center;
+  }
+  .flex-grow-1 {
+    flex-grow: 1;
+  }
 </style>
