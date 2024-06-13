@@ -16,17 +16,18 @@ function onLogin() {
   loading.value = true;
   error.value = null;
 
+ 
   // Simulating asynchronous behavior with setTimeout
   setTimeout(() => {
-    const user = store.users.find(u => u.username === username.value && u.password === password.value); // เปลี่ยน users เป็น todoUsers
+    const user = store.users.find(u => u.username === username.value && u.password === password.value);
 
     if (user) {
       localStorage.setItem('isLoggedIn', 'true');
       router.push('/todo');
-      console.log('Login successful:', username.value);
+      console.log('Login successful:', username);
     } else {
       error.value = 'Invalid login credentials';
-      console.log('Login failed:', username.value);
+      console.log('Login failed:', username);
     }
 
     loading.value = false;
@@ -82,8 +83,8 @@ function onLogin() {
             variant="elevated"
             rounded
             class="mr-4"
-          > 
-            Login 
+          >
+            Login
           </v-btn>
 
           <v-btn

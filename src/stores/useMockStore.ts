@@ -2,6 +2,7 @@
 import { defineStore } from "pinia";
 
 interface TodoUser {
+  id: number;
   username: string;
   password: string;
 }

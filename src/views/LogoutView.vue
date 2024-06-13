@@ -7,7 +7,7 @@ function logout() {
   // ทำการ logout logic
   // เช่น ลบสถานะการ login จาก local storage หรือ Vuex store
   localStorage.removeItem('isLoggedIn');
-  router.push('/login');
+  router.push('/');
 }
 </script>
 
