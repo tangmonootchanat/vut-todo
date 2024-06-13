@@ -40,6 +40,8 @@ function navigateHome() {
         <v-btn icon="mdi-dots-vertical" variant="text"></v-btn>
       </v-app-bar>
 
+      
+
       <v-navigation-drawer
         v-model="drawer"
         :location="$vuetify.display.mobile ? 'bottom' : undefined"
@@ -47,7 +49,9 @@ function navigateHome() {
       >
       </v-navigation-drawer>
 
-      <v-main style="height: 500px;">
+      <!-- <v-list-title>My files</v-list-title> -->
+
+      <v-main>
        
       </v-main>
     </v-layout>

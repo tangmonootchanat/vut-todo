@@ -1,4 +1,3 @@
-<!-- src/components/TodoList.vue -->
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
 import { useTodoStore } from '../stores/todo';
@@ -7,35 +6,23 @@ import type { Todo } from '../stores/todo';
 const todoStore = useTodoStore();
 const todoList = todoStore.todoList;
 
-// interface Todo {
-//     id: number;
-//     text: string;
-//     date: string;
-//     done: boolean;
-//   }
+const name = ref('');
+const searchQuery = ref('');
+const isEditing = ref(false);
+const editingIndex = ref<number | null>(null);
 
-  const name = ref('');
-  const searchQuery = ref('');
-  // const isLogin = ref(false);
-  const isEditing = ref(false);
-  const editingIndex = ref<number | null>(null);
-
-  const todoData: Todo = reactive({
-    id: 0,
-    text: '',
-    date: '',
-    done: false,
-  });
-
-//   function addTodo() {
-//   if (todoData.text && todoData.date) {
-//     todoData.id = todoStore.todoList.length > 0 ? todoStore.todoList[todoStore.todoList.length - 1].id + 1 : 1;
-//     todoStore.addTodo(todoData);
-//     resetForm();
-//   }
-// }
+const todoData: Todo = reactive({
+  id: 0,
+  text: '',
+  date: '',
+  done: false,
+});
 
 function addOrUpdateTodo() {
+  if (!name.value.trim()) {
+    return;
+  }
+
   if (isEditing.value && editingIndex.value !== null) {
     updateTodo();
   } else {
@@ -67,15 +54,14 @@ function updateTodo() {
   }
 }
 
-
 function resetForm() {
-    todoData.id = 0;
-    todoData.text = '';
-    todoData.date = '';
-    todoData.done = false;
-    name.value = '';
-    isEditing.value = false;
-    editingIndex.value = null;
+  todoData.id = 0;
+  todoData.text = '';
+  todoData.date = '';
+  todoData.done = false;
+  name.value = '';
+  isEditing.value = false;
+  editingIndex.value = null;
 }
 
 function editTodo(todo: Todo, index: number) {
@@ -88,16 +74,9 @@ function editTodo(todo: Todo, index: number) {
   editingIndex.value = index;
 }
 
-
-// watch(name, (newValue) => {
-  //   todoData.text = newValue;
-  // });
-
 function onDeleteTodo(index: number) {
   todoStore.deleteTodo(index);
 }
-
-
 
 function toggleDone(todo: Todo) {
   const todoIndex = todoList.findIndex(t => t.id === todo.id);
@@ -106,11 +85,6 @@ function toggleDone(todo: Todo) {
   }
 }
 
-// function toggleDone(todo: Todo) {
-//   todoStore.updateTodo(todo);
-// }
-
-// ตัวกรองการค้นหา
 const filteredTodoList = computed(() => {
   if (!searchQuery.value) {
     return todoList;
@@ -121,12 +95,7 @@ const filteredTodoList = computed(() => {
 });
 </script>
 
-
 <template>
-  <!-- ! คล้ายๆเป็นการสลับค่า  -->
-  <!-- <h1 v-if="!isLogin">Logout!</h1>
-  <h1 v-else>isLogin 😢</h1> -->
-  
   <v-app>
     <v-main>
       <v-container>
@@ -153,65 +122,92 @@ const filteredTodoList = computed(() => {
             clearable
           ></v-text-field>
 
+          <div v-if="isEditing">
+            <v-btn 
+              @click="addOrUpdateTodo"
+              color="orange-darken-1"
+              variant="flat"
+              class="mr-4"
+              rounded
+            >
+              Update
+            </v-btn>
+
+            <v-btn 
+              @click="resetForm"
+              color="red-lighten-1"
+              variant="flat"
+              class="mr-4"
+              rounded
+            >
+              Cancel
+            </v-btn>
+          </div>
+
           <v-btn 
+            v-else
             @click="addOrUpdateTodo"
-            :color="isEditing ? 'orange-darken-1' : 'green-lighten-1'"
+            color="green-lighten-1"
             variant="flat"
             class="mr-4"
             rounded
-            >
-            {{ isEditing ? 'Update' : 'Add' }}
+          >
+            Add
           </v-btn>
         </div>
 
-          <v-list>
-            <v-card color="blue-grey-lighten-5">
-              <!-- ใช้ v-for เพื่อเป็นการวนลูปข้อมูล ใน filteredTodoList -->
-              <v-list-item v-for="(todo, index) in filteredTodoList" :key="todo.id">
-                <template v-slot:prepend>
-                  <v-list-item-action>
-                    <v-radio 
-                      v-model="todo.done" 
-                      @change="toggleDone(todo)" 
-                    />
-                  </v-list-item-action>
-                </template>
+        <div v-if="filteredTodoList.length === 0" class="no-tasks">
+          <v-icon color="primary" icon="mdi-check" size="100"></v-icon>
+          <div class="text-h5 text-primary">not found.</div>
+        </div>
 
-                <v-list-item-content>
-                  <v-list-item-title>
-                    <span :class="{ 'text-decoration-line-through': todo.done }">{{ todo.text }} - {{ todo.date }}</span>
-                  </v-list-item-title>
-                </v-list-item-content>
+        <v-list>
+          <v-card color="blue-grey-lighten-5">
+            <v-list-item v-for="(todo, index) in filteredTodoList" :key="todo.id">
+              <template v-slot:prepend>
+                <v-list-item-action>
+                  <v-radio 
+                    v-model="todo.done" 
+                    @change="toggleDone(todo)" 
+                  />
+                </v-list-item-action>
+              </template>
 
-                <template v-slot:append>
-                  <v-list-item-action>
-                    <v-btn 
-                      @click="() => editTodo(todo, index)"
-                      color="orange-lighten-2"
-                      icon="mdi-pencil" 
-                      variant="text"
-                      >
-                    </v-btn>
-                    <v-btn 
-                      @click="onDeleteTodo(index)"
-                      icon="mdi-delete"
-                      color="red-lighten-1"
-                      variant="text">
-                    </v-btn>
-                  </v-list-item-action>
-                </template>
-              </v-list-item>
-            </v-card>
-          </v-list>
+              <v-list-item-content>
+                <v-list-item-title>
+                  <span :class="{ 'text-decoration-line-through': todo.done }">{{ todo.text }} - {{ todo.date }}</span>
+                </v-list-item-title>
+              </v-list-item-content>
+
+              <template v-slot:append>
+                <v-list-item-action>
+                  <v-btn 
+                    @click="() => editTodo(todo, index)"
+                    color="orange-lighten-2"
+                    icon="mdi-pencil" 
+                    variant="text"
+                  >
+                  </v-btn>
+                  <v-btn 
+                    @click="onDeleteTodo(index)"
+                    icon="mdi-delete"
+                    color="red-lighten-1"
+                    variant="text"
+                  >
+                  </v-btn>
+                </v-list-item-action>
+              </template>
+            </v-list-item>
+          </v-card>
+        </v-list>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
-
 <style scoped>
   .text-decoration-line-through {
-  text-decoration: line-through;
+    text-decoration: line-through;
   }
   .d-flex {
     display: flex;
@@ -227,5 +223,12 @@ const filteredTodoList = computed(() => {
   }
   .mb-4 {
     margin-bottom: 16px;
+  }
+  .no-tasks {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
   }
 </style>
